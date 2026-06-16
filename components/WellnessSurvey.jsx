@@ -59,7 +59,7 @@ export default function WellnessSurvey() {
         { value: 5, emoji: "⚡", label: "Highly energized" },
         { value: 4, emoji: "🔋", label: "Energized" },
         { value: 3, emoji: "🙂", label: "Normal" },
-        { value: 2, emoji: "😴", label: "Low energy" },
+        { value: 2, emoji: "🥱", label: "Low energy" },
         { value: 1, emoji: "🪫", label: "Exhausted" },
     ];
 
@@ -73,7 +73,7 @@ export default function WellnessSurvey() {
     ];
 
     return (
-        <div className="bg-gray-50 min-h-screen font-sans">
+        <div className="bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 bg-gray-50 min-h-screen font-sans">
             <main className="max-w-2xl mx-auto px-4 py-10">
                 {/* Survey Header */}
                 <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm mb-5">
