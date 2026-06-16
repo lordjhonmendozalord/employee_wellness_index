@@ -24,7 +24,7 @@ const AVATAR_COLORS  = [
   "bg-pink-100 text-pink-700","bg-indigo-100 text-indigo-700",
 ];
 
-const ROLES = ["Team Leader", "HR", "Admin"];
+const ROLES = ["tl", "hr", "admin"];
 
 // ─── Date helpers ─────────────────────────────────────────────────────────────
 const toISO = (d) => {
@@ -66,7 +66,11 @@ function avatarInitials(name = "") {
   return name.split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase();
 }
 function avatarColor(id) {
-  const n = parseInt(id?.replace(/\D/g, "") || "0", 10);
+  const n = parseInt(
+    String(id ?? "").replace(/\D/g, "") || "0",
+    10
+  );
+
   return AVATAR_COLORS[n % AVATAR_COLORS.length];
 }
 
@@ -503,10 +507,10 @@ function UserManagementPage() {
     if (mode === "add") {
       try {
         // Step 1: Create Supabase Auth user
-        const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+        const { data: authData, error: authError } = await supabase.auth.signUp({
           email: form.email,
           password: form.password,
-          email_confirm: true,
+          email_confirm: false,
         });
 
         if (authError) {
@@ -578,9 +582,9 @@ function UserManagementPage() {
       {/* Summary cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <StatCard label="Total users" value={users.length} sub="registered in the system" icon="👥" />
-        <StatCard label="Team Leaders" value={roleCounts["Team Leader"] ?? 0} sub="assigned to teams" icon="👥" accent="text-indigo-600" />
-        <StatCard label="HR Managers" value={roleCounts["HR"] ?? 0} sub="wellness oversight" icon="🛡️" accent="text-blue-600" />
-        <StatCard label="Admins" value={roleCounts["Admin"] ?? 0} sub="system administrators" icon="⚙️" accent="text-slate-600" />
+        <StatCard label="Team Leaders" value={roleCounts["tl"] ?? 0} sub="assigned to teams" icon="👥" accent="text-indigo-600" />
+        <StatCard label="HR Managers" value={roleCounts["hr"] ?? 0} sub="wellness oversight" icon="🛡️" accent="text-blue-600" />
+        <StatCard label="Admins" value={roleCounts["admin"] ?? 0} sub="system administrators" icon="⚙️" accent="text-slate-600" />
       </div>
 
       {/* Table card */}
@@ -678,131 +682,6 @@ function UserManagementPage() {
   );
 }
 
-// ─── System Settings Page ──────────────────────────────────────────────────────
-function SystemSettingsPage() {
-  const [saved, setSaved] = useState(false);
-  const [settings, setSettings] = useState({
-    tl_energy_threshold: 2,
-    tl_emotion_threshold: 1,
-    hr_streak_days: 3,
-    survey_window_start: "08:00",
-    survey_window_end: "09:00",
-    allow_multiple_submissions: false,
-    notify_tl_email: true,
-    notify_hr_email: true,
-  });
-  const set = (k, v) => setSettings((s) => ({ ...s, [k]: v }));
-
-  return (
-    <div className="space-y-4 max-w-2xl">
-      {saved && (
-        <div className="bg-green-50 border border-green-200 rounded-xl px-4 py-3 text-sm text-green-700 flex items-center gap-2">
-          <span>✓</span> Settings saved successfully.
-        </div>
-      )}
-      <div className="bg-white rounded-2xl border border-slate-200 p-5">
-        <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-1">Alert thresholds</p>
-        <h3 className="text-base font-semibold text-slate-800 mb-4">Trigger configuration</h3>
-        <div className="space-y-4">
-          {[
-            { label: "TL notification — energy threshold (≤)", key: "tl_energy_threshold", min: 1, max: 4, hint: "Employees at or below this energy level trigger a TL notification." },
-            { label: "TL notification — emotion threshold (≤)", key: "tl_emotion_threshold", min: 0, max: 3, hint: "Employees at or below this emotion level trigger a TL notification." },
-            { label: "HR alert — consecutive days", key: "hr_streak_days", min: 2, max: 7, hint: "Days of consecutive burnout/exhaustion before an HR alert fires." },
-          ].map(({ label, key, min, max, hint }) => (
-            <div key={key}>
-              <div className="flex items-center justify-between mb-1">
-                <label className="text-sm font-medium text-slate-700">{label}</label>
-                <span className="text-sm font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-lg">{settings[key]}</span>
-              </div>
-              <input type="range" min={min} max={max} value={settings[key]} onChange={(e) => set(key, parseInt(e.target.value))} className="w-full accent-blue-600" />
-              <p className="text-xs text-slate-400 mt-1">{hint}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="bg-white rounded-2xl border border-slate-200 p-5">
-        <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-1">Survey window</p>
-        <h3 className="text-base font-semibold text-slate-800 mb-4">Submission time gate</h3>
-        <div className="grid grid-cols-2 gap-3">
-          {[["Opens at", "survey_window_start"], ["Closes at", "survey_window_end"]].map(([label, key]) => (
-            <div key={key}>
-              <label className="text-xs font-medium text-slate-500 block mb-1">{label}</label>
-              <input type="time" value={settings[key]} onChange={(e) => set(key, e.target.value)} className="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-200" />
-            </div>
-          ))}
-        </div>
-        <div className="flex items-center gap-2 mt-4">
-          <button onClick={() => set("allow_multiple_submissions", !settings.allow_multiple_submissions)} className={`relative w-10 h-5 rounded-full transition-colors flex-shrink-0 ${settings.allow_multiple_submissions ? "bg-blue-600" : "bg-slate-200"}`}>
-            <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${settings.allow_multiple_submissions ? "translate-x-5" : ""}`} />
-          </button>
-          <span className="text-sm text-slate-700">Allow multiple submissions per day</span>
-        </div>
-      </div>
-
-      <div className="bg-white rounded-2xl border border-slate-200 p-5">
-        <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-1">Notifications</p>
-        <h3 className="text-base font-semibold text-slate-800 mb-4">Email alert routing</h3>
-        {[["notify_tl_email", "Send email to Team Leader on TL trigger"], ["notify_hr_email", "Send email to HR on HR streak alert"]].map(([key, label]) => (
-          <div key={key} className="flex items-center gap-2 mb-3">
-            <button onClick={() => set(key, !settings[key])} className={`relative w-10 h-5 rounded-full transition-colors flex-shrink-0 ${settings[key] ? "bg-blue-600" : "bg-slate-200"}`}>
-              <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${settings[key] ? "translate-x-5" : ""}`} />
-            </button>
-            <span className="text-sm text-slate-700">{label}</span>
-          </div>
-        ))}
-      </div>
-
-      <div className="flex justify-end">
-        <button onClick={() => { setSaved(true); setTimeout(() => setSaved(false), 3000); }} className="px-5 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
-          Save settings
-        </button>
-      </div>
-    </div>
-  );
-}
-
-// ─── Audit Log Page ───────────────────────────────────────────────────────────
-function AuditLogPage() {
-  // Simulated audit log — in production, pull from a `audit_logs` table
-  const logs = [
-    { id: 1, action: "User created", target: "EMP-0042 · Maria Santos", actor: "admin@co.com", ts: "2025-06-14 09:12", type: "create" },
-    { id: 2, action: "Role changed → HR", target: "EMP-0018 · Jose Reyes", actor: "admin@co.com", ts: "2025-06-13 14:03", type: "edit" },
-    { id: 3, action: "User deactivated", target: "EMP-0031 · Carla Cruz", actor: "admin@co.com", ts: "2025-06-12 11:55", type: "delete" },
-    { id: 4, action: "Settings updated", target: "HR streak threshold → 3 days", actor: "admin@co.com", ts: "2025-06-11 08:30", type: "settings" },
-    { id: 5, action: "User deleted", target: "EMP-0007 · Ramon Bautista", actor: "admin@co.com", ts: "2025-06-10 16:47", type: "delete" },
-    { id: 6, action: "User created", target: "EMP-0043 · Ana Villanueva", actor: "admin@co.com", ts: "2025-06-09 10:21", type: "create" },
-  ];
-  const TYPE_STYLE = { create: "bg-green-100 text-green-700", edit: "bg-blue-100 text-blue-700", delete: "bg-red-100 text-red-700", settings: "bg-purple-100 text-purple-700" };
-  const TYPE_ICON  = { create: "➕", edit: "✏️", delete: "🗑", settings: "⚙️" };
-
-  return (
-    <div className="bg-white rounded-2xl border border-slate-200">
-      <div className="p-5 border-b border-slate-100">
-        <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-0.5">Audit Log</p>
-        <h2 className="text-base font-semibold text-slate-800">Admin activity history</h2>
-        <p className="text-xs text-slate-400 mt-0.5">All system changes made by administrators. Simulated — wire to your audit_logs table in production.</p>
-      </div>
-      <div className="divide-y divide-slate-50">
-        {logs.map((l) => (
-          <div key={l.id} className="flex items-center gap-4 px-5 py-4">
-            <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-base flex-shrink-0 ${TYPE_STYLE[l.type]}`}>{TYPE_ICON[l.type]}</div>
-            <div className="flex-1">
-              <p className="text-sm font-medium text-slate-800">{l.action}</p>
-              <p className="text-xs text-slate-400">{l.target}</p>
-            </div>
-            <div className="text-right text-xs text-slate-400">
-              <p>{l.actor}</p>
-              <p className="text-slate-300">{l.ts}</p>
-            </div>
-            <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${TYPE_STYLE[l.type]} flex-shrink-0`}>{l.type}</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 // ─── Main Admin Dashboard ─────────────────────────────────────────────────────
 export default function AdminDashboard() {
   const { user, logout } = useAuth();
@@ -880,8 +759,6 @@ export default function AdminDashboard() {
   const NAV = [
     { key: "overview",  label: "Dashboard",      icon: "📊" },
     { key: "users",     label: "User Management", icon: "👤" },
-    { key: "audit",     label: "Audit Log",       icon: "📋" },
-    { key: "settings",  label: "System Settings", icon: "⚙️" },
   ];
 
   // HR Dashboard tabs (only shown on overview page)
@@ -1044,12 +921,6 @@ export default function AdminDashboard() {
 
           {/* ── USER MANAGEMENT ── */}
           {activePage === "users" && <UserManagementPage />}
-
-          {/* ── AUDIT LOG ── */}
-          {activePage === "audit" && <AuditLogPage />}
-
-          {/* ── SYSTEM SETTINGS ── */}
-          {activePage === "settings" && <SystemSettingsPage />}
 
           {/* ── HR DASHBOARD (overview page) ── */}
           {activePage === "overview" && (

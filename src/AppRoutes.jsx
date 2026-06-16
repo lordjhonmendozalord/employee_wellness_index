@@ -39,7 +39,8 @@ export default function AppRoutes() {
     <Routes>
       <Route path="/" element={<WellnessSurvey />} />
       <Route path="/completion" element={<CompletionPage />} />
-      <Route path="/admin-dashboard" element={<AdminDashboard />} />
+      {/* <Route path="/admin-dashboard" element={<AdminDashboard />} /> */}
+      <Route path="/admin-dashboard" element={<ProtectedRoute element={<AdminDashboard />} allowedRoles={["admin"]} />} />
       <Route path="/hr-dashboard" element={<ProtectedRoute element={<HRDashboard />} allowedRoles={["hr", "admin"]} />} />
       <Route path="/tl-dashboard" element={<ProtectedRoute element={<TLDashboard />} allowedRoles={["tl", "admin"]} />} />
       <Route path="/forbidden" element={<ForbiddenPage />} />

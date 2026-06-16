@@ -57,7 +57,7 @@ export default function LoginPage() {
         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
 
           {/* Role tabs */}
-          <div className="grid grid-cols-3 border-b border-slate-100">
+          {/* <div className="grid grid-cols-3 border-b border-slate-100">
             {Object.entries(ROLE_INFO).map(([key, info]) => (
               <button
                 key={key}
@@ -76,13 +76,13 @@ export default function LoginPage() {
                 {info.label}
               </button>
             ))}
-          </div>
+          </div> */}
 
           {/* Form */}
           <div className="p-7">
-            <p className="text-sm font-medium text-slate-700 mb-5">
+            {/* <p className="text-sm font-medium text-slate-700 mb-5">
               Sign in as <span className="font-semibold">{role.label}</span>
-            </p>
+            </p> */}
 
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Email */}
@@ -160,7 +160,7 @@ export default function LoginPage() {
                 {loading ? (
                   <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Signing in…</>
                 ) : (
-                  <>Sign in as {role.label}</>
+                  <>Sign in</>
                 )}
               </button>
             </form>
