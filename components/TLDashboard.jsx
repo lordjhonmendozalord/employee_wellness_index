@@ -266,7 +266,7 @@ function DateFilterBar({ selectedDate, onChange }) {
 
   return (
     <div className="bg-white border-b border-slate-200">
-      <div className="max-w-6xl mx-auto px-6 py-2.5 flex items-center gap-3 flex-wrap">
+      <div className="max-w-7xl mx-auto px-6 py-2.5 flex items-center gap-3 flex-wrap">
         <div className="flex items-center gap-1.5">
           <button
             onClick={() => onChange(today)}
@@ -460,7 +460,7 @@ export default function TLDashboard() {
 
       {/* ── Topbar ── */}
       <nav className="bg-white border-b border-slate-200 sticky top-0 z-20">
-        <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center">
               <svg className="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -516,7 +516,7 @@ export default function TLDashboard() {
         </div>
 
         {/* Tab bar */}
-        <div className="max-w-6xl mx-auto px-6 flex gap-1 border-t border-slate-100">
+        <div className="max-w-7xl mx-auto px-6 flex gap-1 border-t border-slate-100">
           {tabs.map((t) => (
             <button
               key={t.key}
@@ -539,7 +539,7 @@ export default function TLDashboard() {
       {/* ── Historical banner ── */}
       {isHistorical && (
         <div className="bg-amber-50 border-b border-amber-100">
-          <div className="max-w-6xl mx-auto px-6 py-2 flex items-center gap-2 text-xs text-amber-700">
+          <div className="max-w-7xl mx-auto px-6 py-2 flex items-center gap-2 text-xs text-amber-700">
             <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
@@ -548,7 +548,7 @@ export default function TLDashboard() {
         </div>
       )}
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 space-y-5">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-5">
         {loading ? <Spinner /> : (
           <>
 
