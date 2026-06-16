@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../src/supabaseClient";
 import { useAuth } from "../src/useAuth";
+import ExportSurveyButton from "./ExportSurveyButton";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const WELLNESS_CATEGORIES = [
@@ -434,6 +435,7 @@ function DateFilterBar({ selectedDate, onChange }) {
             </span>
           )}
         </div>
+        <ExportSurveyButton />
       </div>
     </div>
   );
