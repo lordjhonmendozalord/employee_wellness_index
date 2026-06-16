@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { createClient } from "@supabase/supabase-js";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "../src/supabaseClient";
+import { useAuth } from "../src/useAuth";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const WELLNESS_CATEGORIES = [
@@ -81,12 +82,11 @@ async function fetchSurveyForDate(dateStr) {
   const { data, error } = await supabase
     .from("employee_survey")
     .select("*")
-    .gte("created_at", `${dateStr}T00:00:00+00:00`)
-    .lte("created_at", `${dateStr}T23:59:59+00:00`)
+    .gte("created_at", `${dateStr}T00:00:00`)
+    .lte("created_at", `${dateStr}T23:59:59`)
     .order("created_at", { ascending: false });
 
   if (error || !data) return [];
-
   // Keep only the latest row per employee_id
   const seen = new Set();
   const deduped = [];
@@ -113,8 +113,8 @@ async function fetchStreaksAsOf(dateStr) {
   const { data, error } = await supabase
     .from("employee_survey")
     .select("employee_id, full_name, energy_level, emotion_level, created_at")
-    .gte("created_at", `${rangeStart}T00:00:00+00:00`)
-    .lte("created_at", `${dateStr}T23:59:59+00:00`)
+    .gte("created_at", `${rangeStart}T00:00:00`)
+    .lte("created_at", `${dateStr}T23:59:59`)
     .order("created_at", { ascending: false });
 
   if (error || !data) return [];
@@ -179,8 +179,8 @@ async function fetchTrendForWeek(dateStr) {
   const { data, error } = await supabase
     .from("employee_survey")
     .select("employee_id, energy_level, emotion_level, created_at")
-    .gte("created_at", `${start}T00:00:00+00:00`)
-    .lte("created_at", `${end}T23:59:59+00:00`)
+    .gte("created_at", `${start}T00:00:00`)
+    .lte("created_at", `${end}T23:59:59`)
     .order("created_at", { ascending: false });
 
   if (error || !data) return [];
@@ -441,11 +441,14 @@ function DateFilterBar({ selectedDate, onChange }) {
 
 // ─── Main Dashboard ───────────────────────────────────────────────────────────
 export default function HRDashboard() {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab]     = useState("overview");
   const [search, setSearch]           = useState("");
   const [loading, setLoading]         = useState(true);
   const [lastRefresh, setLastRefresh] = useState(null);
   const [selectedDate, setSelectedDate] = useState(todayISO());
+  const [showUserMenu, setShowUserMenu] = useState(false);
 
   // Data state
   const [employees, setEmployees] = useState([]);
@@ -483,6 +486,11 @@ export default function HRDashboard() {
   const handleDateChange = (date) => {
     setSelectedDate(date);
     setSearch("");
+  };
+
+  const handleLogout = async () => {
+    await logout();
+    navigate("/login", { replace: true });
   };
 
   // Derived
@@ -564,6 +572,39 @@ export default function HRDashboard() {
                 {hrAlerts.length} HR Alert{hrAlerts.length > 1 ? "s" : ""}
               </span>
             )}
+            {/* User Menu */}
+            <div className="relative">
+              <button
+                onClick={() => setShowUserMenu(!showUserMenu)}
+                className="flex items-center gap-2 text-xs font-medium border border-slate-200 rounded-lg px-3 py-1.5 text-slate-600 hover:bg-slate-50 transition-colors"
+                title={user?.full_name}
+              >
+                <div className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-semibold">
+                  {user?.full_name?.split(" ").map(w => w[0]).join("") || "?"}
+                </div>
+                <span className="hidden sm:inline max-w-20 truncate">{user?.full_name?.split(" ")[0] || "User"}</span>
+              </button>
+              {showUserMenu && (
+                <div className="absolute right-0 mt-1 w-60 bg-white border border-slate-200 rounded-lg shadow-lg z-50">
+                  <div className="px-4 py-3 border-b border-slate-100">
+                    <p className="text-sm font-semibold text-slate-800">{user?.full_name || "User"}</p>
+                    <p className="text-xs text-slate-500">{user?.email || ""}</p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setShowUserMenu(false);
+                      handleLogout();
+                    }}
+                    className="w-full text-left px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2 transition-colors"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
+                    Sign out
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 

@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../src/useAuth";
 
 const ROLE_INFO = {
@@ -7,14 +8,29 @@ const ROLE_INFO = {
   admin: { label: "Administrator", icon: "⚙️",  color: "bg-slate-700",  ring: "focus:ring-slate-300",  btn: "bg-slate-700 hover:bg-slate-800"  },
 };
 
+const ROLE_ROUTES = {
+  hr:    "/hr-dashboard",
+  tl:    "/tl-dashboard",
+  admin: "/admin-dashboard",
+};
+
 export default function LoginPage() {
-  const { login, error, loading } = useAuth();
+  const { login, error, loading, user } = useAuth();
+  const navigate = useNavigate();
   const [selectedRole, setSelectedRole] = useState("hr");  // "hr" | "tl" | "admin"
   const [email, setEmail]               = useState("");
   const [password, setPassword]         = useState("");
   const [showPass, setShowPass]         = useState(false);
 
   const role = ROLE_INFO[selectedRole];
+
+  // Redirect to appropriate dashboard after successful login
+  useEffect(() => {
+    if (user) {
+      const route = ROLE_ROUTES[user.role] || "/hr-dashboard";
+      navigate(route, { replace: true });
+    }
+  }, [user, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
